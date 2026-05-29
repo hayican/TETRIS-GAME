@@ -81,6 +81,64 @@ function playerDrop() {
     dropCounter = 0;
 }
 
+function playerMove(dir) {
+    player.pos.x += dir;
+    if (collide(arena, player)) {
+        player.pos.x -= dir;
+    }
+}
+
+function rotate(matrix, dir) {
+    for (let y = 0; y < matrix.length; ++y) {
+        for (let x = 0; x < y; ++x) {
+            [
+                matrix[x][y],
+                matrix[y][x],
+            ] = [
+                matrix[y][x],
+                matrix[x][y],
+            ];
+        }
+    }
+
+    if (dir > 0) {
+        matrix.forEach(row => row.reverse());
+    } else {
+        matrix.reverse();
+    }
+}
+
+function playerRotate(dir) {
+    const pos = player.pos.x;
+    let offset = 1;
+    rotate(player.matrix, dir);
+
+    while (collide(arena, player)) {
+        player.pos.x += offset;
+        offset = -(offset + (offset > 0 ? 1 : -1));
+        if (offset > player.matrix[0].length) {
+            rotate(player.matrix, -dir);
+            player.pos.x = pos;
+            return;
+        }   
+    }
+}
+
+// Nguping ketukan keyboard dari player
+document.addEventListener('keydown', event => {
+    if (event.key === 'ArrowLeft') {
+        playerMove(-1); // Panah Kiri: Geser kiri
+    } else if (event.key === 'ArrowRight') {
+        playerMove(1);  // Panah Kanan: Geser kanan
+    } else if (event.key === 'ArrowDown') {
+        playerDrop();   // Panah Bawah: Biar balok jatuh lebih cepet
+    } else if (event.key === 'q' || event.key === 'Q') {
+        playerRotate(-1); // Tombol Q: Putar balik arah jarum jam
+    } else if (event.key === 'w' || event.key === 'W') {
+        playerRotate(1);  // Tombol W: Putar searah jarum jam
+    }
+});
+
 function update(time = 0) {
     const deltaTime = time - lastTime;
     lastTime = time;
